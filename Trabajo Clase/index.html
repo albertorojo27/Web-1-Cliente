@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Misión 1 · El oráculo de los números</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <h1>
+          Misión 1 · El oráculo de los números
+          <span class="spark">✦</span>
+          <span class="orb">◉</span>
+        </h1>
+        <span class="mission-badge">MISIÓN</span>
+      </header>
+
+      <main class="content">
+        <section class="left-column">
+          <div class="meta-line">
+            <span class="dot gold">●</span>
+            IA como pair · <span class="time">60–90 min</span> · cuaderno 1, nivel 2
+          </div>
+
+          <div class="objective-row">
+            <span class="dot pink">●</span>
+            <span class="label">Objetivo:</span>
+            <span>el juego «Adivina el número» (1–100) completo en el navegador.</span>
+          </div>
+
+          <div class="practice-row">
+            <span class="dot cyan">●</span>
+            <span class="label">Prácticas:</span>
+            <span class="code-inline">const</span>
+            <span class="code-inline">/ let</span>
+            <span class="code-inline">Number()</span>
+            <span class="code-inline">y</span>
+            <span class="code-inline">===</span>
+            <span class="code-inline">if</span>
+            <span class="code-inline">condicionales</span>
+            <span class="code-inline">template literals</span>
+            <span class="code-inline">querySelector</span>
+            <span class="code-inline">textContent</span>
+            <span class="code-inline">evento</span>
+            <span class="code-inline">click</span>
+          </div>
+
+          <pre class="snippet">// app.js — el oráculo elige su número secreto:
+const secreto = Math.floor(Math.random() * 100) + 1;
+console.log("pssst... el secreto es:", secreto);</pre>
+        </section>
+
+        <aside class="right-column">
+          <h2>Fases (checkpoints)</h2>
+          <ol>
+            <li>Conexión: app.js carga con <span class="code-inline">defer</span>; selecciona input, botón y párrafos.</li>
+            <li>Primera consulta: <span class="code-inline">click</span> → lee el valor, <span class="code-inline">Number()</span> y múestralo.</li>
+            <li>El oráculo responde: mayor / menor / correcto; valor vacío o fuera de 1–100 → aviso sin gastar intento.</li>
+            <li>El marcador: <span class="code-inline">let intentos</span> visible en pantalla.</li>
+            <li>Fin de partida: al acertar, <span class="code-inline">boton.disabled = true</span>.</li>
+          </ol>
+        </aside>
+      </main>
+
+      <section class="game-panel" aria-label="Juego adivina el número">
+        <h3>Juego: adivina el número</h3>
+
+        <div class="controls">
+          <input id="guessInput" type="number" min="1" max="100" placeholder="Tu número" aria-label="Número a adivinar" />
+          <button id="guessButton" type="button">Probar</button>
+        </div>
+
+        <p id="message" class="message">Prueba tu suerte: el oráculo ya eligió un número entre 1 y 100.</p>
+        <p class="count">Intentos: <span id="intentos">0</span></p>
+      </section>
+
+      <footer class="footer">
+        <span>U1 · Introducción a JavaScript</span>
+        <span>U.tad · Web Development I, the Client</span>
+        <span>35</span>
+      </footer>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
