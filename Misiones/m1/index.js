@@ -2,8 +2,8 @@
  * CYBER-GRID 2026 // BREACH PROTOCOL
  * Vanilla JavaScript (ES6+) - Sin librerías ni frameworks.
  * 
- * FASE 3: Buffer de memoria, algoritmo de verificación de secuencias
- * contiguas y cálculo de viabilidad en tiempo real.
+ * FASE 4: Temporizador de seguridad, máquina de estados finita,
+ * modal de fin de partida y controles interactivos.
  */
 
 // --- CONSTANTES DE CONFIGURACIÓN ---
@@ -34,8 +34,8 @@ let activeCoord = 0;         // Índice de la fila o columna activa
 let buffer = [];
 let targetSequences = [];
 let gameState = 'IDLE';      // 'IDLE' | 'PLAYING' | 'VICTORY' | 'FAILURE'
-let timeRemaining = GAME_DURATION_SECONDS;
 let timerInterval = null;
+let endTime = 0;
 
 // --- FUNCIONES DE GENERACIÓN Y LÓGICA DE DATOS ---
 
@@ -159,7 +159,7 @@ const evaluateSequences = () => {
       return;
     }
 
-    // Si aún no está resuelta, evaluar si sigue siendo matemáticamente alcanzable
+    // Si aún no está resuelta, evaluar si sigue siendo alcanzable
     const matchPrefixLen = getMatchingPrefixLength(target.sequence);
     const slotsNeeded = seqLen - matchPrefixLen;
 
@@ -169,6 +169,87 @@ const evaluateSequences = () => {
   });
 
   renderSequences();
+};
+
+// --- GESTIÓN DEL TEMPORIZADOR Y FIN DE PARTIDA ---
+
+/**
+ * Detiene el temporizador activo.
+ */
+const stopTimer = () => {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+};
+
+/**
+ * Finaliza la partida, actualiza la UI y despliega el modal de resultado.
+ * @param {'VICTORY' | 'FAILURE' | 'TIMEOUT'} reason
+ */
+const endGame = (reason) => {
+  stopTimer();
+
+  const solvedCount = targetSequences.filter((seq) => seq.solved).length;
+  const isFullVictory = solvedCount === targetSequences.length;
+
+  if (isFullVictory) {
+    gameState = 'VICTORY';
+    updateSystemStatus('VICTORY', 'BREACH_SUCCESSFUL');
+    gameResultTitle.textContent = 'BREACH_SUCCESSFUL';
+    gameResultTitle.style.color = 'var(--cyber-green)';
+    gameResultSub.textContent = `¡Mainframe infiltrado al 100%! Todas las secuencias (${solvedCount}/${targetSequences.length}) cargadas con éxito.`;
+  } else if (solvedCount > 0) {
+    gameState = 'VICTORY';
+    updateSystemStatus('VICTORY', 'PARTIAL_BREACH');
+    gameResultTitle.textContent = 'PARTIAL_BREACH';
+    gameResultTitle.style.color = 'var(--cyber-blue)';
+    gameResultSub.textContent = `Infiltración parcial: ${solvedCount} de ${targetSequences.length} secuencias descifradas.`;
+  } else {
+    gameState = 'FAILURE';
+    const statusText = reason === 'TIMEOUT' ? 'SECURITY_LOCKOUT' : 'BUFFER_OVERFLOW';
+    const titleText = reason === 'TIMEOUT' ? 'CONNECTION_LOST' : 'ACCESS_DENIED';
+    const descText = reason === 'TIMEOUT'
+      ? 'El cortafuegos corporativo cerró la conexión por tiempo agotado.'
+      : 'Capacidad de buffer excedida sin completar secuencias válidas.';
+
+    updateSystemStatus('FAILURE', statusText);
+    gameResultTitle.textContent = titleText;
+    gameResultTitle.style.color = 'var(--cyber-red)';
+    gameResultSub.textContent = descText;
+  }
+
+  btnStart.disabled = false;
+  btnReset.disabled = true;
+
+  // Desplegar modal de fin de partida
+  gameOverScreen.classList.remove('hidden');
+
+  // Re-renderizar matriz para deshabilitar celdas activas
+  renderMatrix();
+};
+
+/**
+ * Actualiza el temporizador en cada tic.
+ */
+const updateTimerTick = () => {
+  const remainingMs = Math.max(0, endTime - Date.now());
+  const seconds = (remainingMs / 1000).toFixed(2);
+  timerDisplayElement.textContent = `${seconds}s`;
+
+  if (remainingMs <= 0) {
+    endGame('TIMEOUT');
+  }
+};
+
+/**
+ * Inicia el temporizador preciso sin desfase por retrasos de hilo.
+ */
+const startTimer = () => {
+  stopTimer();
+  endTime = Date.now() + GAME_DURATION_SECONDS * 1000;
+  timerDisplayElement.textContent = `${GAME_DURATION_SECONDS.toFixed(2)}s`;
+  timerInterval = setInterval(updateTimerTick, 50);
 };
 
 // --- RENDERIZADO EN EL DOM (SIN innerHTML vulnerable) ---
@@ -218,7 +299,6 @@ const renderSequences = () => {
     const codesContainer = document.createElement('div');
     codesContainer.className = 'seq-codes';
 
-    // Determinar qué códigos destacar con .matched
     let matchedCount = 0;
     if (target.solved) {
       matchedCount = target.sequence.length;
@@ -287,6 +367,9 @@ const renderMatrix = () => {
           } else {
             cell.classList.add('disabled');
           }
+        } else {
+          // En estados no activos (IDLE o fin de juego), deshabilitar celdas
+          cell.classList.add('disabled');
         }
       }
 
@@ -350,18 +433,62 @@ const handleCellClick = (event) => {
     activeCoord = row;
   }
 
-  // 4. Actualizar vistas
+  // 4. Evaluar secuencias con el nuevo código en el buffer
+  evaluateSequences();
+
+  // 5. Comprobar si se ha alcanzado condición de fin de partida
+  const allSolved = targetSequences.every((seq) => seq.solved);
+  const bufferFull = buffer.length >= BUFFER_CAPACITY;
+
+  if (allSolved) {
+    renderMatrix();
+    renderBuffer();
+    endGame('VICTORY');
+    return;
+  }
+
+  if (bufferFull) {
+    renderMatrix();
+    renderBuffer();
+    endGame('FAILURE');
+    return;
+  }
+
+  // 6. Actualizar vistas en juego normal
   renderMatrix();
   renderBuffer();
-
-  // 5. Evaluar secuencias con el nuevo código en el buffer
-  evaluateSequences();
 };
 
 /**
- * Inicia una nueva partida configurando el estado y la interfaz.
+ * Reinicia la terminal a su estado inicial inactivo.
+ */
+const resetBreachGame = () => {
+  stopTimer();
+  gameOverScreen.classList.add('hidden');
+
+  usedCells.clear();
+  buffer = [];
+  activeDirection = 'row';
+  activeCoord = 0;
+  gameState = 'IDLE';
+
+  timerDisplayElement.textContent = `${GAME_DURATION_SECONDS.toFixed(2)}s`;
+  updateSystemStatus('IDLE', 'IDLE_STATE');
+
+  btnStart.disabled = false;
+  btnReset.disabled = true;
+
+  generateGridAndSequences();
+  renderMatrix();
+  renderBuffer();
+  renderSequences();
+};
+
+/**
+ * Inicia una nueva partida configurando el estado, temporizador y la interfaz.
  */
 const startBreachGame = () => {
+  gameOverScreen.classList.add('hidden');
   generateGridAndSequences();
   usedCells.clear();
   buffer = [];
@@ -376,12 +503,13 @@ const startBreachGame = () => {
   renderMatrix();
   renderBuffer();
   renderSequences();
+  startTimer();
 };
 
 /**
  * Inicialización al cargar el DOM.
  */
-const initPhase3 = () => {
+const initPhase4 = () => {
   generateGridAndSequences();
   renderMatrix();
   renderBuffer();
@@ -389,8 +517,14 @@ const initPhase3 = () => {
 
   // Delegación de eventos en el contenedor de la matriz
   matrixElement.addEventListener('click', handleCellClick);
+
+  // Botones de acción
   btnStart.addEventListener('click', startBreachGame);
+  btnReset.addEventListener('click', resetBreachGame);
+  btnRestart.addEventListener('click', () => {
+    startBreachGame();
+  });
 };
 
-document.addEventListener('DOMContentLoaded', initPhase3);
+document.addEventListener('DOMContentLoaded', initPhase4);
 
