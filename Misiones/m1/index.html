@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER-GRID 2026 // BREACH PROTOCOL</title>
+  <link rel="stylesheet" href="index.css">
+  <!-- Fuentes estilo cyberpunk/retro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Efecto de pantalla CRT y Scanlines -->
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+
+  <div class="terminal-container">
+    <!-- Encabezado del Terminal -->
+    <header class="terminal-header">
+      <div class="header-title">
+        <span class="glitch-text" data-text="CYBER-GRID v2.26">CYBER-GRID v2.26</span>
+        <span class="header-subtitle">// BREACH_PROTOCOL.EXE</span>
+      </div>
+      <div class="header-status">
+        <span class="status-label">STATUS:</span>
+        <span id="system-status" class="status-value idle">IDLE_STATE</span>
+      </div>
+      <div class="header-timer">
+        <span class="timer-label">SEGURIDAD:</span>
+        <span id="timer-display" class="timer-value">30.00s</span>
+      </div>
+    </header>
+
+    <!-- Cuerpo principal de la interfaz -->
+    <main class="terminal-grid">
+      <!-- Panel Izquierdo: Rejilla de Código (Code Matrix) -->
+      <section class="panel-left">
+        <div class="panel-header">
+          <span class="panel-title">> MATRIZ_DE_CODIGO</span>
+          <span class="panel-desc">Selecciona un código de la línea/columna activa</span>
+        </div>
+        
+        <!-- Contenedor del Tablero 5x5 -->
+        <div class="matrix-wrapper">
+          <div id="code-matrix" class="code-matrix">
+            <!-- Celdas generadas dinámicamente por JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel Derecho: Buffer de Entrada y Objetivos de Secuencia -->
+      <section class="panel-right">
+        <!-- Buffer de entrada -->
+        <div class="right-subpanel buffer-panel">
+          <div class="panel-header">
+            <span class="panel-title">> BUFFER_MEMORIA</span>
+            <span id="buffer-usage" class="panel-desc">0 / 4 RANURAS</span>
+          </div>
+          <div id="buffer-display" class="buffer-display">
+            <!-- Ranuras generadas dinámicamente por JS -->
+          </div>
+        </div>
+
+        <!-- Secuencias objetivo -->
+        <div class="right-subpanel sequences-panel">
+          <div class="panel-header">
+            <span class="panel-title">> SECUENCIAS_OBJETIVO</span>
+            <span class="panel-desc">Resuelve para hackear la terminal</span>
+          </div>
+          <div id="sequences-display" class="sequences-display">
+            <!-- Secuencias generadas dinámicamente por JS -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Panel de Control Inferior -->
+    <footer class="terminal-footer">
+      <div class="instructions-footer">
+        <p><span class="highlight">HACK_TIP:</span> Comienza eligiendo un código de la <strong>primera fila activa</strong>. El siguiente movimiento se restringirá a la <strong>columna</strong> de tu elección, luego a la <strong>fila</strong>, alternando continuamente.</p>
+      </div>
+      <div class="action-buttons">
+        <button id="btn-start" class="cyber-btn btn-primary">INICIAR_BREACH</button>
+        <button id="btn-reset" class="cyber-btn btn-secondary" disabled>RESET_TERMINAL</button>
+      </div>
+    </footer>
+
+    <!-- Overlay de Fin de Partida (Modal / Pantalla completa) -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+      <div class="overlay-content">
+        <h2 id="game-result-title" class="glitch-title">BREACH_SUCCESSFUL</h2>
+        <div class="overlay-details">
+          <p>SISTEMA COMPROMETIDO CON ÉXITO</p>
+          <p class="overlay-sub" id="game-result-sub">Todos los objetivos han sido cargados en memoria.</p>
+        </div>
+        <button id="btn-restart" class="cyber-btn btn-accent">REINICIAR_SISTEMA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de página informativo con la tecla secreta -->
+  <div class="secret-info-bar">
+    <span>MODO_DIAGNÓSTICO: Pulsa la tecla <strong class="key-shortcut">"n"</strong> para alternar el modo nocturno profundo.</span>
+    <span>SISTEMA_OPERATIVO: WIN32_BREACHER // CONSOLA_DOM</span>
+  </div>
+
+  <script src="index.js" defer></script>
+</body>
+</html>
