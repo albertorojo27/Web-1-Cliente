@@ -2,8 +2,8 @@
  * CYBER-GRID 2026 // BREACH PROTOCOL
  * Vanilla JavaScript (ES6+) - Sin librerías ni frameworks.
  * 
- * FASE 1: Inicialización del estado, generación aleatoria del tablero
- * con ruta resoluble garantizada y renderizado dinámico en el DOM.
+ * FASE 2: Mecánica de selección alternada (Fila <-> Columna) y delegación
+ * de eventos única en el contenedor de la matriz.
  */
 
 // --- CONSTANTES DE CONFIGURACIÓN ---
@@ -208,6 +208,7 @@ const renderMatrix = () => {
 
           if (isRowActive || isColActive) {
             cell.classList.add('highlight-active');
+            cell.classList.add('highlight-hover-allowed');
           } else {
             cell.classList.add('disabled');
           }
@@ -220,13 +221,99 @@ const renderMatrix = () => {
 };
 
 /**
- * Inicialización inicial al cargar el DOM.
+ * Actualiza el indicador visual de estado en el header.
+ * @param {string} state
+ * @param {string} text
  */
-const initPhase1 = () => {
+const updateSystemStatus = (state, text) => {
+  systemStatusElement.className = `status-value ${state.toLowerCase()}`;
+  systemStatusElement.textContent = text;
+};
+
+// --- CONTROL DE EVENTOS Y MECÁNICA DE MOVIMIENTO ---
+
+/**
+ * Maneja el clic en una celda de la matriz mediante delegación de eventos.
+ * @param {MouseEvent} event
+ */
+const handleCellClick = (event) => {
+  const cell = event.target.closest('.matrix-cell');
+  if (!cell || gameState !== 'PLAYING') {
+    return;
+  }
+
+  const row = Number(cell.dataset.row);
+  const col = Number(cell.dataset.col);
+  const cellKey = `${row},${col}`;
+
+  // Verificar si la celda ya fue consumida
+  if (usedCells.has(cellKey)) {
+    return;
+  }
+
+  // Verificar si la celda pertenece a la guía direccional activa
+  const isRowTurn = activeDirection === 'row' && row === activeCoord;
+  const isColTurn = activeDirection === 'col' && col === activeCoord;
+
+  if (!isRowTurn && !isColTurn) {
+    // Clic fuera del eje permitido: ignorar
+    return;
+  }
+
+  // 1. Registrar celda usada
+  usedCells.add(cellKey);
+
+  // 2. Extraer el código e ingresarlo en el buffer
+  const chosenCode = gridData[row][col];
+  buffer.push(chosenCode);
+
+  // 3. Alternar la dirección activa y actualizar la coordenada permitida
+  if (activeDirection === 'row') {
+    activeDirection = 'col';
+    activeCoord = col;
+  } else {
+    activeDirection = 'row';
+    activeCoord = row;
+  }
+
+  // 4. Actualizar vista
+  renderMatrix();
+  renderBuffer();
+};
+
+/**
+ * Inicia una nueva partida configurando el estado y la interfaz.
+ */
+const startBreachGame = () => {
   generateGridAndSequences();
+  usedCells.clear();
+  buffer = [];
+  activeDirection = 'row';
+  activeCoord = 0;
+  gameState = 'PLAYING';
+
+  updateSystemStatus('PLAYING', 'BREACHING...');
+  btnStart.disabled = true;
+  btnReset.disabled = false;
+
   renderMatrix();
   renderBuffer();
   renderSequences();
 };
 
-document.addEventListener('DOMContentLoaded', initPhase1);
+/**
+ * Inicialización al cargar el DOM.
+ */
+const initPhase2 = () => {
+  generateGridAndSequences();
+  renderMatrix();
+  renderBuffer();
+  renderSequences();
+
+  // Delegación de eventos en el contenedor de la matriz
+  matrixElement.addEventListener('click', handleCellClick);
+  btnStart.addEventListener('click', startBreachGame);
+};
+
+document.addEventListener('DOMContentLoaded', initPhase2);
+
