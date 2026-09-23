@@ -2,8 +2,8 @@
  * CYBER-GRID 2026 // BREACH PROTOCOL
  * Vanilla JavaScript (ES6+) - Sin librerías ni frameworks.
  * 
- * FASE 2: Mecánica de selección alternada (Fila <-> Columna) y delegación
- * de eventos única en el contenedor de la matriz.
+ * FASE 3: Buffer de memoria, algoritmo de verificación de secuencias
+ * contiguas y cálculo de viabilidad en tiempo real.
  */
 
 // --- CONSTANTES DE CONFIGURACIÓN ---
@@ -107,6 +107,70 @@ const generateGridAndSequences = () => {
   ];
 };
 
+// --- ALGORITMO DE COMPROBACIÓN DE SECUENCIAS ---
+
+/**
+ * Calcula la longitud del mayor prefijo de la secuencia que coincide
+ * con un sufijo del buffer actual.
+ * @param {string[]} sequence
+ * @returns {number}
+ */
+const getMatchingPrefixLength = (sequence) => {
+  const maxPossible = Math.min(buffer.length, sequence.length);
+  for (let len = maxPossible; len > 0; len -= 1) {
+    const bufSuffix = buffer.slice(buffer.length - len);
+    const seqPrefix = sequence.slice(0, len);
+    const matches = bufSuffix.every((code, i) => code === seqPrefix[i]);
+    if (matches) {
+      return len;
+    }
+  }
+  return 0;
+};
+
+/**
+ * Evalúa las secuencias objetivo contra el contenido actual del buffer:
+ * 1. Marca como 'solved' si la secuencia completa aparece como subsecuencia contigua.
+ * 2. Marca como 'missed' si los huecos restantes del buffer no bastan para completarla.
+ */
+const evaluateSequences = () => {
+  const remainingSlots = BUFFER_CAPACITY - buffer.length;
+
+  targetSequences.forEach((target) => {
+    if (target.solved) {
+      return;
+    }
+
+    const seqLen = target.sequence.length;
+
+    // Comprobar si ya existe como subsecuencia contigua en el buffer
+    let isMatched = false;
+    for (let i = 0; i <= buffer.length - seqLen; i += 1) {
+      const slice = buffer.slice(i, i + seqLen);
+      if (slice.every((code, idx) => code === target.sequence[idx])) {
+        isMatched = true;
+        break;
+      }
+    }
+
+    if (isMatched) {
+      target.solved = true;
+      target.missed = false;
+      return;
+    }
+
+    // Si aún no está resuelta, evaluar si sigue siendo matemáticamente alcanzable
+    const matchPrefixLen = getMatchingPrefixLength(target.sequence);
+    const slotsNeeded = seqLen - matchPrefixLen;
+
+    if (slotsNeeded > remainingSlots) {
+      target.missed = true;
+    }
+  });
+
+  renderSequences();
+};
+
 // --- RENDERIZADO EN EL DOM (SIN innerHTML vulnerable) ---
 
 /**
@@ -133,7 +197,7 @@ const renderBuffer = () => {
 };
 
 /**
- * Renderiza las secuencias objetivo en el panel derecho.
+ * Renderiza las secuencias objetivo en el panel derecho con feedback visual de coincidencias.
  */
 const renderSequences = () => {
   sequencesDisplayElement.replaceChildren();
@@ -154,9 +218,20 @@ const renderSequences = () => {
     const codesContainer = document.createElement('div');
     codesContainer.className = 'seq-codes';
 
-    target.sequence.forEach((code) => {
+    // Determinar qué códigos destacar con .matched
+    let matchedCount = 0;
+    if (target.solved) {
+      matchedCount = target.sequence.length;
+    } else if (!target.missed) {
+      matchedCount = getMatchingPrefixLength(target.sequence);
+    }
+
+    target.sequence.forEach((code, codeIdx) => {
       const codeSpan = document.createElement('span');
       codeSpan.className = 'seq-code';
+      if (codeIdx < matchedCount) {
+        codeSpan.classList.add('matched');
+      }
       codeSpan.textContent = code;
       codesContainer.append(codeSpan);
     });
@@ -256,7 +331,6 @@ const handleCellClick = (event) => {
   const isColTurn = activeDirection === 'col' && col === activeCoord;
 
   if (!isRowTurn && !isColTurn) {
-    // Clic fuera del eje permitido: ignorar
     return;
   }
 
@@ -276,9 +350,12 @@ const handleCellClick = (event) => {
     activeCoord = row;
   }
 
-  // 4. Actualizar vista
+  // 4. Actualizar vistas
   renderMatrix();
   renderBuffer();
+
+  // 5. Evaluar secuencias con el nuevo código en el buffer
+  evaluateSequences();
 };
 
 /**
@@ -304,7 +381,7 @@ const startBreachGame = () => {
 /**
  * Inicialización al cargar el DOM.
  */
-const initPhase2 = () => {
+const initPhase3 = () => {
   generateGridAndSequences();
   renderMatrix();
   renderBuffer();
@@ -315,5 +392,5 @@ const initPhase2 = () => {
   btnStart.addEventListener('click', startBreachGame);
 };
 
-document.addEventListener('DOMContentLoaded', initPhase2);
+document.addEventListener('DOMContentLoaded', initPhase3);
 
