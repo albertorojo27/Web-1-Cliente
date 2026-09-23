@@ -189,7 +189,7 @@ h1 {
   align-items: center;
 }
 
-#guessInput {
+#intento {
   flex: 1;
   min-width: 0;
   height: 52px;
@@ -199,7 +199,7 @@ h1 {
   font-size: 1.1rem;
 }
 
-#guessButton {
+#probar {
   height: 52px;
   border: none;
   border-radius: 12px;
@@ -212,7 +212,7 @@ h1 {
   box-shadow: 0 6px 14px rgba(219, 151, 37, 0.22);
 }
 
-#guessButton:disabled {
+#probar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -267,8 +267,8 @@ h1 {
     align-items: stretch;
   }
 
-  #guessButton,
-  #guessInput {
+  #probar,
+  #intento {
     width: 100%;
   }
 }

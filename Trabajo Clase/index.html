@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Misión 1 · El oráculo de los números</title>
     <link rel="stylesheet" href="index.css" />
+    <script src="index.js" defer></script>
   </head>
   <body>
     <div class="page">
@@ -68,11 +69,11 @@ console.log("pssst... el secreto es:", secreto);</pre>
         <h3>Juego: adivina el número</h3>
 
         <div class="controls">
-          <input id="guessInput" type="number" min="1" max="100" placeholder="Tu número" aria-label="Número a adivinar" />
-          <button id="guessButton" type="button">Probar</button>
+          <input id="intento" type="number" min="1" max="100" placeholder="Tu número" aria-label="Número a adivinar" />
+          <button id="probar" type="button">Probar</button>
         </div>
 
-        <p id="message" class="message">Prueba tu suerte: el oráculo ya eligió un número entre 1 y 100.</p>
+        <p id="respuesta" class="message">Prueba tu suerte: el oráculo ya eligió un número entre 1 y 100.</p>
         <p class="count">Intentos: <span id="intentos">0</span></p>
       </section>
 
@@ -83,6 +84,5 @@ console.log("pssst... el secreto es:", secreto);</pre>
       </footer>
     </div>
 
-    <script src="index.js"></script>
   </body>
 </html>
