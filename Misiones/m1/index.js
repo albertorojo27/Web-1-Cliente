@@ -2,8 +2,8 @@
  * CYBER-GRID 2026 // BREACH PROTOCOL
  * Vanilla JavaScript (ES6+) - Sin librerías ni frameworks.
  * 
- * FASE 4: Temporizador de seguridad, máquina de estados finita,
- * modal de fin de partida y controles interactivos.
+ * FASE 5: Modo nocturno secreto (tecla "n"), atajos de accesibilidad,
+ * efectos de audio sintético retro (Web Audio API) y finalización.
  */
 
 // --- CONSTANTES DE CONFIGURACIÓN ---
@@ -36,6 +36,40 @@ let targetSequences = [];
 let gameState = 'IDLE';      // 'IDLE' | 'PLAYING' | 'VICTORY' | 'FAILURE'
 let timerInterval = null;
 let endTime = 0;
+
+// --- EFECTOS DE AUDIO SINTÉTICO (Web Audio API nativo) ---
+let audioCtx = null;
+
+const playBleep = (freq = 600, duration = 0.08, type = 'sine') => {
+  try {
+    if (!audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+      }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    if (!audioCtx) {
+      return;
+    }
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch {
+    // Si el navegador bloquea audio sin interacción, se silencia de forma transparente
+  }
+};
 
 // --- FUNCIONES DE GENERACIÓN Y LÓGICA DE DATOS ---
 
@@ -156,6 +190,7 @@ const evaluateSequences = () => {
     if (isMatched) {
       target.solved = true;
       target.missed = false;
+      playBleep(880, 0.15, 'square');
       return;
     }
 
@@ -195,18 +230,25 @@ const endGame = (reason) => {
 
   if (isFullVictory) {
     gameState = 'VICTORY';
+    playBleep(587, 0.1, 'sine');
+    setTimeout(() => playBleep(880, 0.25, 'triangle'), 120);
+
     updateSystemStatus('VICTORY', 'BREACH_SUCCESSFUL');
     gameResultTitle.textContent = 'BREACH_SUCCESSFUL';
     gameResultTitle.style.color = 'var(--cyber-green)';
     gameResultSub.textContent = `¡Mainframe infiltrado al 100%! Todas las secuencias (${solvedCount}/${targetSequences.length}) cargadas con éxito.`;
   } else if (solvedCount > 0) {
     gameState = 'VICTORY';
+    playBleep(520, 0.2, 'sine');
+
     updateSystemStatus('VICTORY', 'PARTIAL_BREACH');
     gameResultTitle.textContent = 'PARTIAL_BREACH';
     gameResultTitle.style.color = 'var(--cyber-blue)';
     gameResultSub.textContent = `Infiltración parcial: ${solvedCount} de ${targetSequences.length} secuencias descifradas.`;
   } else {
     gameState = 'FAILURE';
+    playBleep(140, 0.35, 'sawtooth');
+
     const statusText = reason === 'TIMEOUT' ? 'SECURITY_LOCKOUT' : 'BUFFER_OVERFLOW';
     const titleText = reason === 'TIMEOUT' ? 'CONNECTION_LOST' : 'ACCESS_DENIED';
     const descText = reason === 'TIMEOUT'
@@ -414,17 +456,21 @@ const handleCellClick = (event) => {
   const isColTurn = activeDirection === 'col' && col === activeCoord;
 
   if (!isRowTurn && !isColTurn) {
+    playBleep(200, 0.05, 'sawtooth');
     return;
   }
 
-  // 1. Registrar celda usada
+  // 1. Sonido de pulsación correcta
+  playBleep(650, 0.06, 'sine');
+
+  // 2. Registrar celda usada
   usedCells.add(cellKey);
 
-  // 2. Extraer el código e ingresarlo en el buffer
+  // 3. Extraer el código e ingresarlo en el buffer
   const chosenCode = gridData[row][col];
   buffer.push(chosenCode);
 
-  // 3. Alternar la dirección activa y actualizar la coordenada permitida
+  // 4. Alternar la dirección activa y actualizar la coordenada permitida
   if (activeDirection === 'row') {
     activeDirection = 'col';
     activeCoord = col;
@@ -433,10 +479,10 @@ const handleCellClick = (event) => {
     activeCoord = row;
   }
 
-  // 4. Evaluar secuencias con el nuevo código en el buffer
+  // 5. Evaluar secuencias con el nuevo código en el buffer
   evaluateSequences();
 
-  // 5. Comprobar si se ha alcanzado condición de fin de partida
+  // 6. Comprobar si se ha alcanzado condición de fin de partida
   const allSolved = targetSequences.every((seq) => seq.solved);
   const bufferFull = buffer.length >= BUFFER_CAPACITY;
 
@@ -454,7 +500,7 @@ const handleCellClick = (event) => {
     return;
   }
 
-  // 6. Actualizar vistas en juego normal
+  // 7. Actualizar vistas en juego normal
   renderMatrix();
   renderBuffer();
 };
@@ -509,7 +555,7 @@ const startBreachGame = () => {
 /**
  * Inicialización al cargar el DOM.
  */
-const initPhase4 = () => {
+const initPhase5 = () => {
   generateGridAndSequences();
   renderMatrix();
   renderBuffer();
@@ -524,7 +570,22 @@ const initPhase4 = () => {
   btnRestart.addEventListener('click', () => {
     startBreachGame();
   });
+
+  // BONUS M1: Atajo de teclado secreto "n" para alternar modo nocturno profundo
+  // y tecla Escape para cerrar modal
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'n' || event.key === 'N') {
+      document.body.classList.toggle('nocturnal');
+      playBleep(440, 0.05, 'sine');
+    }
+
+    if (event.key === 'Escape') {
+      if (!gameOverScreen.classList.contains('hidden')) {
+        gameOverScreen.classList.add('hidden');
+      }
+    }
+  });
 };
 
-document.addEventListener('DOMContentLoaded', initPhase4);
+document.addEventListener('DOMContentLoaded', initPhase5);
 
