@@ -1,0 +1,16 @@
+{
+  "name": "async-odyssey",
+  "private": true,
+  "version": "1.0.0",
+  "description": "M2 · Async Odyssey — Bitácora de expedición Pokémon que consume PokeAPI con fetch + async/await",
+  "type": "module",
+  "author": "Alberto Rojo Gala",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

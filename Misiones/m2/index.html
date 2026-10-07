@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bitácora de expedición Pokémon construida con fetch, async/await y PokeAPI." />
+    <link rel="icon" type="image/svg+xml" href="/unknown.svg" />
+    <title>Async Odyssey · Bitácora de expedición</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="topbar__kicker">M2 · Async Odyssey</p>
+        <h1 class="topbar__title">Bitácora de expedición</h1>
+        <p class="topbar__quote">«El event loop no espera a nadie.»</p>
+      </div>
+      <div class="topbar__tools">
+        <p id="status" class="status" aria-live="polite"></p>
+        <button id="clear-cache" class="btn btn--ghost" type="button">Vaciar caché</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section aria-labelledby="zones-title">
+        <h2 id="zones-title" class="section-title">1 · Elige una zona</h2>
+        <div id="zones" class="zones"></div>
+      </section>
+
+      <section id="controls" class="controls" hidden aria-label="Filtros">
+        <label class="field">
+          <span>Buscar en la bitácora</span>
+          <input id="search" type="search" placeholder="p. ej. pika" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Ordenar por</span>
+          <select id="sort"></select>
+        </label>
+      </section>
+
+      <section id="report" class="report" hidden aria-live="polite"></section>
+
+      <section aria-label="Avistamientos">
+        <div id="results" aria-live="polite"></div>
+        <button id="more" class="btn btn--more" type="button" hidden>Explorar más</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Datos de <a href="https://pokeapi.co" target="_blank" rel="noopener">PokeAPI</a> · Alberto Rojo Gala
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
