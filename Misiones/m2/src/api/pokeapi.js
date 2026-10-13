@@ -24,8 +24,16 @@ export const requestStats = { network: 0, cache: 0 };
  * `slim` recorta la respuesta antes de cachearla: un Pokémon completo pesa
  * cientos de KB (movimientos, versiones...) y llenaría localStorage enseguida.
  * `cacheIf` evita guardar respuestas vacías: no queremos recordar un error 24 horas.
+ * `notFound` es el mensaje del 404, que depende de qué se estaba buscando.
  */
-async function fetchJSON(path, { slim = (data) => data, cacheIf = (data) => Object.keys(data).length > 0 } = {}) {
+async function fetchJSON(
+  path,
+  {
+    slim = (data) => data,
+    cacheIf = (data) => Object.keys(data).length > 0,
+    notFound = 'No se encontró lo que buscabas (404).',
+  } = {},
+) {
   const cached = readCache(path);
   if (cached !== null) {
     requestStats.cache++;
@@ -41,7 +49,7 @@ async function fetchJSON(path, { slim = (data) => data, cacheIf = (data) => Obje
     if (!response.ok) {
       const message =
         response.status === 404
-          ? 'Esa zona no aparece en el mapa (404).'
+          ? notFound
           : `El servidor respondió con un error (${response.status}).`;
       throw new ApiError(message, { status: response.status });
     }
@@ -87,6 +95,7 @@ export async function getType(name) {
       pokemon: Array.isArray(pokemon) ? pokemon : [],
     }),
     cacheIf: (d) => d.pokemon.length > 0,
+    notFound: 'Esa zona no aparece en el mapa (404).',
   });
 }
 
@@ -108,6 +117,7 @@ export async function getPokemon(name) {
       },
     }),
     cacheIf: (d) => Boolean(d.id && d.name),
+    notFound: `No hay registro del Pokémon «${name}» (404).`,
   });
 }
 

@@ -120,6 +120,10 @@ async function loadNextPage(id = expeditionId) {
     }
     dom.controls.hidden = false;
     render();
+  } catch (err) {
+    // getManyPokemon no rechaza (usa allSettled), pero normalizar o pintar sí podría lanzar.
+    if (id !== expeditionId) return;
+    renderError(dom.results, err.message ?? 'Algo falló al procesar los avistamientos.', () => startExpedition(state.currentType));
   } finally {
     if (id === expeditionId) {
       state.loading = false;

@@ -45,11 +45,12 @@ Cada módulo tiene una responsabilidad: `api/` es el único que hace `fetch`, `l
 ## Qué cubre de la misión
 
 ### Asincronía
-- `fetchJSON()` usa `async/await` dentro de `try/catch/finally`, comprueba `response.ok` y traduce cada fallo a un `ApiError` con un mensaje claro para el usuario (404, 5xx, sin red, timeout, JSON corrupto, respuesta vacía).
+- `fetchJSON()` usa `async/await` dentro de `try/catch/finally`, comprueba `response.ok` y traduce cada fallo a un `ApiError` con un mensaje claro para el usuario (404, 5xx, sin red, timeout, JSON corrupto, respuesta vacía). El mensaje del 404 depende de lo que se pedía: no es lo mismo una zona que no existe que un Pokémon que no existe.
 - **Timeout** de 8 s con `AbortController`.
 - Los Pokémon de una página se piden **en paralelo** con `Promise.allSettled`: si falla uno, se muestran los demás y un aviso con cuántos se perdieron.
 - **Condición de carrera controlada**: cada expedición tiene un id. Si cambias de zona mientras otra se está cargando, las respuestas antiguas se descartan al llegar.
 - Estados visibles: esqueletos animados mientras carga, panel de error con botón **Reintentar**, y mensajes de "zona desierta" o "sin resultados".
+- Todas las funciones de carga (`loadTypes`, `startExpedition`, `loadNextPage`) tienen su `catch`: si algo falla al pedir, normalizar o pintar los datos, se muestra el panel de error en vez de dejar una promesa rechazada sin capturar.
 
 ### Transformación de datos
 Todo en [`src/logic/transform.js`](src/logic/transform.js), sin bucles `for`:
@@ -76,7 +77,7 @@ Todo en [`src/logic/transform.js`](src/logic/transform.js), sin bucles `for`:
 
 ## Uso de IA
 
-Esta misión la desarrollé con **Claude Code** (modelo Claude Opus 5.5) dentro de VS Code, en modo agente. Le pasé el enunciado completo de la misión con la rúbrica, cuando lo hizo por primera vez revise todo y le dije como queria que funcionase por ejemplo le dije que queria que todas las llamadas usasen fetch y await  que sino lo usaba que modificase el codigo. Basicamente le he ido guiando para que termine siendo como yo quiero.
+Esta misión la desarrollé con **Claude Code** (modelo Claude Opus 5.5) dentro de VS Code, en modo agente. Le pasé el enunciado completo de la misión con la rúbrica, cuando lo hizo por primera vez revisé todo y le dije como queria que funcionase por ejemplo le dije que quería que todas las llamadas usasen fetch y await. Basicamente le he ido guiando para que termine siendo cómo yo quiero.
 
 Cómo se verificó:
 - Las funciones de `transform.js` se ejecutaron contra la API real y contra entradas rotas (`{}`, `null`, arrays vacíos) para comprobar que no lanzan.
