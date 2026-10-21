@@ -4,7 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open /",
+    "boton": "vite --open /Boton/",
+    "saludo": "vite --open /Saludo/",
+    "aplausometro": "vite --open /Aplausometro/",
+    "trivial": "vite --open /TrivialAcademia/",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -1,0 +1,100 @@
+/* Estilos compartidos por todos los ejercicios */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+  color: #1e293b;
+  background: linear-gradient(135deg, #0f2a6b 0%, #1d4ed8 55%, #38bdf8 100%);
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 520px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+  color: #1d4ed8;
+}
+
+button {
+  margin: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #f97316;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+button:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* Trivial: opciones a lo ancho y colores de acierto/fallo */
+.opciones {
+  list-style: none;
+  padding: 0;
+}
+
+.opciones button {
+  width: 100%;
+  margin: 6px 0;
+}
+
+.opciones button.correcta {
+  background: #16a34a;
+  opacity: 1;
+}
+
+.opciones button.incorrecta {
+  background: #dc2626;
+  opacity: 1;
+}
+
+/* Menú de la página principal */
+.menu {
+  list-style: none;
+  padding: 0;
+}
+
+.menu a {
+  display: block;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #f97316;
+  text-decoration: none;
+}
+
+.menu a:hover {
+  background: #ea580c;
+}
